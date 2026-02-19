@@ -1,5 +1,6 @@
 import streamlit as st
 from groq import Groq
+import sys
 
 # -----------------------------
 # Page config
@@ -10,10 +11,19 @@ st.title("✨ Creator Assistant AI")
 st.write("Generate social media content by tone and platform")
 
 # -----------------------------
-# Groq Client
+# Load Groq API key
 # -----------------------------
-client = Groq(api_key=st.secrets["gsk"])
- # Corrected
+if "gsk" not in st.secrets:
+    st.error("API key not found! Please add your Groq API key in Streamlit secrets as `gsk`.")
+    st.stop()
+
+api_key = st.secrets["gsk"]
+
+try:
+    client = Groq(api_key=api_key)
+except Exception as e:
+    st.error(f"Failed to initialize Groq client: {e}")
+    st.stop()
 
 # -----------------------------
 # Inputs
@@ -31,10 +41,10 @@ tone = st.selectbox(
 topic = st.text_input("What is your content about?")
 
 # -----------------------------
-# Generate
+# Generate content
 # -----------------------------
 if st.button("Generate Content"):
-    if not topic:
+    if not topic.strip():
         st.warning("Please enter a topic")
     else:
         prompt = f"""
@@ -46,15 +56,15 @@ Topic: {topic}
 
 Write engaging, platform-appropriate content.
 """
-
         with st.spinner("Creating content..."):
-            response = client.chat.completions.create(
-                model="llama3-8b-8192",   # Make sure this exists in your account
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7
-            )
-
-        st.subheader("Generated Content")
-        st.write(response.choices[0].content)  # Corrected access
-
-
+            try:
+                # Use a known working Groq model
+                response = client.chat.completions.create(
+                    model="llama2-7b",  # safer default model
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7
+                )
+                st.subheader("Generated Content")
+                st.write(response.choices[0].content)
+            except Exception as e:
+                st.error(f"Failed to generate content: {e}")
