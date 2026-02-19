@@ -24,18 +24,17 @@ except Exception as e:
     st.stop()
 
 # -----------------------------
-# Automatically pick a model
+# List available models
 # -----------------------------
 try:
     available_models = client.models.list()
-    # If Groq returns tuples, take the first element (the model name)
-    chat_models = [m[0] for m in available_models if "chat" in m[0].lower()]
+    text_models = [m[0] for m in available_models if "chat" not in m[0].lower()]
     
-    if not chat_models:
-        st.error("No chat models available in your account. Please check your Groq dashboard.")
+    if not text_models:
+        st.error("No completion models available in your account. Please check your Groq dashboard.")
         st.stop()
     
-    model_choice = chat_models[0]  # Automatically pick the first available chat model
+    model_choice = text_models[0]  # Automatically pick the first available text model
     st.info(f"Using model: **{model_choice}**")
     
 except Exception as e:
@@ -75,12 +74,13 @@ Write engaging, platform-appropriate content.
 """
         with st.spinner("Creating content..."):
             try:
-                response = client.chat.completions.create(
+                response = client.completions.create(
                     model=model_choice,
-                    messages=[{"role": "user", "content": prompt}],
+                    prompt=prompt,
+                    max_tokens=300,
                     temperature=0.7
                 )
                 st.subheader("Generated Content")
-                st.write(response.choices[0].content)
+                st.write(response.choices[0].text)
             except Exception as e:
                 st.error(f"Failed to generate content: {e}")
