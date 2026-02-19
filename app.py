@@ -1,41 +1,61 @@
 import streamlit as st
-from openai import OpenAI
-import os
+from groq import Groq
 
-st.title("Creator Assistant AI")
+# -----------------------------
+# Page config
+# -----------------------------
+st.set_page_config(page_title="Creator Assistant AI", page_icon="✨")
 
-# Dropdowns
+st.title("✨ Creator Assistant AI")
+st.write("Generate social media content by tone and platform")
+
+# -----------------------------
+# Groq Client (FREE)
+# -----------------------------
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
+)
+
+# -----------------------------
+# User Inputs (OLD STYLE)
+# -----------------------------
 platform = st.selectbox(
     "Choose social media platform",
-    ["YouTube", "Instagram", "Twitter (X)", "LinkedIn", "Blog"]
+    ["Instagram", "YouTube", "Twitter (X)", "LinkedIn"]
 )
 
 tone = st.selectbox(
     "Choose tone",
-    ["Professional", "Casual", "Funny", "Motivational", "Friendly"]
+    ["Casual", "Professional", "Funny", "Motivational"]
 )
 
-prompt = st.text_input("What do you want to create?")
+topic = st.text_input("What is your content about?")
 
-# OpenAI client (reads API key from Streamlit Secrets)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# -----------------------------
+# Generate Content
+# -----------------------------
+if st.button("Generate Content"):
+    if not topic:
+        st.warning("Please enter a topic")
+    else:
+        prompt = f"""
+You are a professional social media content creator.
 
-if prompt:
-    full_prompt = f"""
-You are a creator assistant.
-Create content for {platform}.
-Use a {tone} tone.
+Platform: {platform}
+Tone: {tone}
+Topic: {topic}
 
-User request: {prompt}
+Write engaging, platform-appropriate content.
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "user", "content": full_prompt}
-        ]
-    )
+        with st.spinner("Creating content..."):
+            response = client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
 
-    st.subheader("Generated Content")
-    st.write(response.choices[0].message.content)
+        st.subheader("Generated Content")
+        st.write(response.choices[0].message.content)
 
