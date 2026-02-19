@@ -11,7 +11,7 @@ st.write("Generate social media content by tone and platform")
 # -----------------------------
 # Ollama API Key
 # -----------------------------
-OLLAMA_API_KEY = st.secrets.get("ollama_api_key")  # Make sure you add this in Streamlit secrets
+OLLAMA_API_KEY = st.secrets.get("ollama_api_key")  # Add your Ollama API key in Streamlit secrets
 OLLAMA_BASE_URL = "https://api.ollama.com"
 
 if not OLLAMA_API_KEY:
@@ -24,30 +24,9 @@ headers = {
 }
 
 # -----------------------------
-# Verify API key and fetch models
+# Use the downloaded llama2 model
 # -----------------------------
-try:
-    resp = requests.get(f"{OLLAMA_BASE_URL}/v1/models", headers=headers)
-    if resp.status_code == 401:
-        st.error("Unauthorized: Your Ollama API key is invalid.")
-        st.stop()
-    elif resp.status_code != 200:
-        st.error(f"Failed to fetch models. Status code: {resp.status_code}")
-        st.stop()
-    models_data = resp.json()
-    available_models = [m['name'] for m in models_data.get('models', [])]
-    if not available_models:
-        st.error("No models found in your Ollama account.")
-        st.stop()
-except Exception as e:
-    st.error(f"Error fetching models: {e}")
-    st.stop()
-
-# -----------------------------
-# Automatically pick a model
-# -----------------------------
-# You can let the user pick, or just use the first model
-model_choice = available_models[0]
+model_choice = "llama2"  # the exact name of your downloaded model
 st.info(f"Using model: **{model_choice}**")
 
 # -----------------------------
