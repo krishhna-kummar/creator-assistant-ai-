@@ -12,9 +12,7 @@ st.write("Generate social media content by tone and platform")
 # -----------------------------
 # Groq Client
 # -----------------------------
-client = Groq(
-    api_key=st.secrets["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"]
-)
+client = Groq(api_key=st.secrets["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"])  # Corrected
 
 # -----------------------------
 # Inputs
@@ -50,14 +48,12 @@ Write engaging, platform-appropriate content.
 
         with st.spinner("Creating content..."):
             response = client.chat.completions.create(
-                model="llama3-8b-8192",   # ✅ FIXED MODEL
-                messages=[
-                    {"role": "user", "content": prompt}
-                ],
+                model="llama3-8b-8192",   # Make sure this exists in your account
+                messages=[{"role": "user", "content": prompt}],
                 temperature=0.7
             )
 
         st.subheader("Generated Content")
-        st.write(response.choices[0].message.content)
+        st.write(response.choices[0].content)  # Corrected access
 
 
