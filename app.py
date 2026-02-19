@@ -13,7 +13,7 @@ st.write("Generate social media content by tone and platform")
 # Groq Client
 # -----------------------------
 client = Groq(
-    api_key=st.secrets["GROQ_API_KEY"]
+    api_key=st.secrets["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"]
 )
 
 # -----------------------------
