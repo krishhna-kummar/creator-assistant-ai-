@@ -1,33 +1,12 @@
 import streamlit as st
-import requests
+import subprocess
 
 # -----------------------------
 # Page config
 # -----------------------------
 st.set_page_config(page_title="Creator Assistant AI", page_icon="✨")
 st.title("✨ Creator Assistant AI")
-st.write("Generate social media content by tone and platform")
-
-# -----------------------------
-# Ollama API Key
-# -----------------------------
-OLLAMA_API_KEY = st.secrets.get("ollama_api_key")  # Add your Ollama API key in Streamlit secrets
-OLLAMA_BASE_URL = "https://api.ollama.com"
-
-if not OLLAMA_API_KEY:
-    st.error("Ollama API key not found. Please add it to Streamlit secrets as 'ollama_api_key'.")
-    st.stop()
-
-headers = {
-    "Authorization": f"Bearer {OLLAMA_API_KEY}",
-    "Content-Type": "application/json"
-}
-
-# -----------------------------
-# Use the downloaded llama2 model
-# -----------------------------
-model_choice = "llama2"  # the exact name of your downloaded model
-st.info(f"Using model: **{model_choice}**")
+st.write("Generate social media content by tone and platform using local Ollama llama2 model")
 
 # -----------------------------
 # Inputs
@@ -45,6 +24,22 @@ tone = st.selectbox(
 topic = st.text_input("What is your content about?")
 
 # -----------------------------
+# Function to run local llama2
+# -----------------------------
+def generate_with_local_model(prompt):
+    try:
+        result = subprocess.run(
+            ["ollama", "run", "llama2", "--prompt", prompt],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            return f"Error running local model: {result.stderr}"
+        return result.stdout
+    except Exception as e:
+        return f"Unexpected error: {e}"
+
+# -----------------------------
 # Generate content
 # -----------------------------
 if st.button("Generate Content"):
@@ -60,26 +55,7 @@ Topic: {topic}
 
 Write engaging, platform-appropriate content.
 """
-
-        payload = {
-            "model": model_choice,
-            "prompt": prompt,
-            "max_tokens": 300
-        }
-
-        with st.spinner("Creating content..."):
-            try:
-                response = requests.post(
-                    f"{OLLAMA_BASE_URL}/v1/completions",
-                    headers=headers,
-                    json=payload
-                )
-                response.raise_for_status()
-                data = response.json()
-                content = data['choices'][0]['text']
-                st.subheader("Generated Content")
-                st.write(content)
-            except requests.exceptions.HTTPError as e:
-                st.error(f"Failed to generate content: {e}")
-            except Exception as e:
-                st.error(f"Unexpected error: {e}")
+        with st.spinner("Generating content locally..."):
+            content = generate_with_local_model(prompt)
+            st.subheader("Generated Content")
+            st.write(content)
