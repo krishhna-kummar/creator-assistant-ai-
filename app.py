@@ -4,15 +4,38 @@ import os
 
 st.title("Creator Assistant AI")
 
-prompt = st.text_input("Enter your prompt")
+# Dropdowns
+platform = st.selectbox(
+    "Choose social media platform",
+    ["YouTube", "Instagram", "Twitter (X)", "LinkedIn", "Blog"]
+)
 
-# Create client (reads OPENAI_API_KEY automatically)
+tone = st.selectbox(
+    "Choose tone",
+    ["Professional", "Casual", "Funny", "Motivational", "Friendly"]
+)
+
+prompt = st.text_input("What do you want to create?")
+
+# OpenAI client (reads API key from Streamlit Secrets)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 if prompt:
-    response = client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt
+    full_prompt = f"""
+You are a creator assistant.
+Create content for {platform}.
+Use a {tone} tone.
+
+User request: {prompt}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "user", "content": full_prompt}
+        ]
     )
 
-    st.write(response.output_text)
+    st.subheader("Generated Content")
+    st.write(response.choices[0].message.content)
+
