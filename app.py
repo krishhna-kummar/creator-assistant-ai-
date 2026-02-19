@@ -10,14 +10,14 @@ st.title("✨ Creator Assistant AI")
 st.write("Generate social media content by tone and platform")
 
 # -----------------------------
-# Groq Client (FREE)
+# Groq Client
 # -----------------------------
 client = Groq(
     api_key=st.secrets["GROQ_API_KEY"]
 )
 
 # -----------------------------
-# User Inputs (OLD STYLE)
+# Inputs
 # -----------------------------
 platform = st.selectbox(
     "Choose social media platform",
@@ -32,7 +32,7 @@ tone = st.selectbox(
 topic = st.text_input("What is your content about?")
 
 # -----------------------------
-# Generate Content
+# Generate
 # -----------------------------
 if st.button("Generate Content"):
     if not topic:
@@ -50,12 +50,14 @@ Write engaging, platform-appropriate content.
 
         with st.spinner("Creating content..."):
             response = client.chat.completions.create(
-                model="llama3-70b-8192",
+                model="llama3-8b-8192",   # ✅ FIXED MODEL
                 messages=[
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.7
             )
 
         st.subheader("Generated Content")
         st.write(response.choices[0].message.content)
+
 
