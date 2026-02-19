@@ -1,12 +1,10 @@
 import streamlit as st
 from groq import Groq
-import sys
 
 # -----------------------------
 # Page config
 # -----------------------------
 st.set_page_config(page_title="Creator Assistant AI", page_icon="✨")
-
 st.title("✨ Creator Assistant AI")
 st.write("Generate social media content by tone and platform")
 
@@ -23,6 +21,24 @@ try:
     client = Groq(api_key=api_key)
 except Exception as e:
     st.error(f"Failed to initialize Groq client: {e}")
+    st.stop()
+
+# -----------------------------
+# Automatically pick a model
+# -----------------------------
+try:
+    available_models = client.models.list()
+    chat_models = [m.name for m in available_models if "chat" in m.name.lower()]
+    
+    if not chat_models:
+        st.error("No chat models available in your account. Please check your Groq dashboard.")
+        st.stop()
+    
+    model_choice = chat_models[0]  # Automatically pick the first available chat model
+    st.info(f"Using model: **{model_choice}**")
+    
+except Exception as e:
+    st.error(f"Failed to fetch models: {e}")
     st.stop()
 
 # -----------------------------
@@ -58,9 +74,8 @@ Write engaging, platform-appropriate content.
 """
         with st.spinner("Creating content..."):
             try:
-                # Use a known working Groq model
                 response = client.chat.completions.create(
-                    model="llama2-7b",  # safer default model
+                    model=model_choice,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7
                 )
