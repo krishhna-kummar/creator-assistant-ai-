@@ -11,7 +11,7 @@ st.write("Generate social media content by tone and platform")
 # -----------------------------
 # Ollama API Key
 # -----------------------------
-OLLAMA_API_KEY = st.secrets.get("ollama_api_key")  # Set your Ollama API key in Streamlit secrets
+OLLAMA_API_KEY = st.secrets.get("ollama_api_key")  # Add your Ollama API key in Streamlit secrets
 OLLAMA_BASE_URL = "https://api.ollama.com"
 
 if not OLLAMA_API_KEY:
@@ -56,7 +56,7 @@ Write engaging, platform-appropriate content.
 """
 
         payload = {
-            "model": "llama2",  # replace with any model you have in Ollama
+            "model": "llama2",  # Replace with any Ollama model you have access to
             "prompt": prompt,
             "max_tokens": 300
         }
@@ -70,9 +70,10 @@ Write engaging, platform-appropriate content.
                 )
                 response.raise_for_status()
                 data = response.json()
-                # Ollama returns output in data['choices'][0]['text']
                 content = data['choices'][0]['text']
                 st.subheader("Generated Content")
                 st.write(content)
-            except Exception as e:
+            except requests.exceptions.HTTPError as e:
                 st.error(f"Failed to generate content: {e}")
+            except Exception as e:
+                st.error(f"Unexpected error: {e}")
