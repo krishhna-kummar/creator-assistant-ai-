@@ -1,5 +1,5 @@
 import streamlit as st
-from groq import Groq
+import requests
 
 # -----------------------------
 # Page config
@@ -9,37 +9,19 @@ st.title("✨ Creator Assistant AI")
 st.write("Generate social media content by tone and platform")
 
 # -----------------------------
-# Load Groq API key
+# Ollama API Key
 # -----------------------------
-if "gsk" not in st.secrets:
-    st.error("API key not found! Please add your Groq API key in Streamlit secrets as `gsk`.")
+OLLAMA_API_KEY = st.secrets.get("ollama_api_key")  # Set your Ollama API key in Streamlit secrets
+OLLAMA_BASE_URL = "https://api.ollama.com"
+
+if not OLLAMA_API_KEY:
+    st.error("Ollama API key not found. Please add it to Streamlit secrets as 'ollama_api_key'.")
     st.stop()
 
-api_key = st.secrets["gsk"]
-
-try:
-    client = Groq(api_key=api_key)
-except Exception as e:
-    st.error(f"Failed to initialize Groq client: {e}")
-    st.stop()
-
-# -----------------------------
-# List available models
-# -----------------------------
-try:
-    available_models = client.models.list()
-    text_models = [m[0] for m in available_models if "chat" not in m[0].lower()]
-    
-    if not text_models:
-        st.error("No completion models available in your account. Please check your Groq dashboard.")
-        st.stop()
-    
-    model_choice = text_models[0]  # Automatically pick the first available text model
-    st.info(f"Using model: **{model_choice}**")
-    
-except Exception as e:
-    st.error(f"Failed to fetch models: {e}")
-    st.stop()
+headers = {
+    "Authorization": f"Bearer {OLLAMA_API_KEY}",
+    "Content-Type": "application/json"
+}
 
 # -----------------------------
 # Inputs
@@ -72,15 +54,25 @@ Topic: {topic}
 
 Write engaging, platform-appropriate content.
 """
+
+        payload = {
+            "model": "llama2",  # replace with any model you have in Ollama
+            "prompt": prompt,
+            "max_tokens": 300
+        }
+
         with st.spinner("Creating content..."):
             try:
-                response = client.completions.create(
-                    model=model_choice,
-                    prompt=prompt,
-                    max_tokens=300,
-                    temperature=0.7
+                response = requests.post(
+                    f"{OLLAMA_BASE_URL}/v1/completions",
+                    headers=headers,
+                    json=payload
                 )
+                response.raise_for_status()
+                data = response.json()
+                # Ollama returns output in data['choices'][0]['text']
+                content = data['choices'][0]['text']
                 st.subheader("Generated Content")
-                st.write(response.choices[0].text)
+                st.write(content)
             except Exception as e:
                 st.error(f"Failed to generate content: {e}")
