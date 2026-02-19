@@ -28,7 +28,8 @@ except Exception as e:
 # -----------------------------
 try:
     available_models = client.models.list()
-    chat_models = [m.name for m in available_models if "chat" in m.name.lower()]
+    # If Groq returns tuples, take the first element (the model name)
+    chat_models = [m[0] for m in available_models if "chat" in m[0].lower()]
     
     if not chat_models:
         st.error("No chat models available in your account. Please check your Groq dashboard.")
